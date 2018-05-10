@@ -7,6 +7,6 @@ namespace Psr\Event\Dispatcher;
 interface RegistrationInterface
 {
 
-    public function addListener(callable $listener, string $type = null) : void;
+    public function addListener(callable $listener, string $type = null) : string;
 
 }
