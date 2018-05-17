@@ -11,9 +11,14 @@
         }
     ],
     "require": {
-        "php": ">=7.1.0"
+        "php": ">=7.1.0",
+        "psr/container": "^1.0"
     },
     "autoload": {
+        "files": [
+            "src/functions/lazy_listener.php",
+            "src/functions/listener.php"
+        ],
         "psr-4": {
             "Psr\\Event\\Dispatcher\\": "src/"
         }
