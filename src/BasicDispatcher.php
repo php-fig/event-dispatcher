@@ -14,10 +14,8 @@ class BasicDispatcher implements DispatcherInterface, RegistrationInterface
 
     public function dispatch(EventInterface $event): EventInterface
     {
-        $listeners = $this->listeners[get_class($event)] ?? [];
 
-        /** @var callable $listener */
-        foreach ($listeners as $listener) {
+        foreach ($this->getRelevantListeners($event) as $listener) {
             $event = $listener($event);
             // @todo Should this be a separate type of dispatcher, or must all dispatchers handle this?
             // @todo This turns the event dispatcher into a fallthrough pipeline, too. Is that OK?
@@ -27,6 +25,15 @@ class BasicDispatcher implements DispatcherInterface, RegistrationInterface
         }
 
         return $event;
+    }
+
+    protected function getRelevantListeners(EventInterface $event) : \Generator
+    {
+        foreach ($this->listeners as $type => $listeners) {
+            if ($event instanceof $type) {
+                yield from $listeners;
+            }
+        }
     }
 
     public function addListener(callable $listener, string $type = null): void
