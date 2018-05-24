@@ -6,9 +6,7 @@ namespace Psr\Event\Dispatcher;
 interface EmitterInterface
 {
     /**
-     * Emit the given event to all attached listeners.
-     *
-     * @throws EventTypeMismatchExceptionInterface
+     * Emit the given event to all attached listeners for that event.
      */
-    public function emit(EventInterface $event) : ResultAggregateInterface;
+    public function emit(EventInterface $event) : void;
 }

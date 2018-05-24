@@ -3,15 +3,22 @@ declare(strict_types=1);
 
 namespace Psr\Event\Dispatcher;
 
-interface EventInterface
+trait EventTrait
 {
     /**
-     * Provide access to the event arguments, if any.
-     *
-     * Implementations may have this return null if no event arguments are
-     * needed, or if immutable event arguments are unnecessary.
+     * @var ?EventArgumentsInterface
      */
-    public function getArguments() : ?EventArgumentsInterface;
+    private $arguments;
+
+    /**
+     * @var bool
+     */
+    private $isStopped = false;
+
+    public function getArguments() : ?EventArgumentsInterface
+    {
+        return $this->arguments;
+    }
 
     /**
      * Stop event propagation.
@@ -23,7 +30,10 @@ interface EventInterface
      * MUST return a NEW instance that will cause isStopped to return boolean
      * true.
      */
-    public function stopPropagation() : self;
+    public function stopPropagation() : void
+    {
+        $event->isStopped = true;
+    }
 
     /**
      * Is propagation stopped?
@@ -31,5 +41,8 @@ interface EventInterface
      * This will typically only be used by the dispatcher to determine if the
      * previous listener halted propagation.
      */
-    public function isStopped() : bool;
+    public function isStopped() : bool
+    {
+        return $this->isStopped;
+    }
 }

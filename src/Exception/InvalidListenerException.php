@@ -12,9 +12,8 @@ class InvalidListenerException extends RuntimeException
     public static function forNonCallableService($service) : self
     {
         return new self(sprintf(
-            'Lazy listener of type "%s" is invalid; must be a %s implementation or PHP callable',
-            gettype($service),
-            ListenerInterface::class
+            'Lazy listener of type "%s" is invalid; must be a PHP callable',
+            gettype($service)
         ));
     }
 
@@ -24,10 +23,8 @@ class InvalidListenerException extends RuntimeException
     public static function forNonCallableInstance($service) : self
     {
         return new self(sprintf(
-            'Lazy listener of type "%s" is invalid; must be a %s implementation,'
-            . ' callable, or have a method associated with it',
-            get_class($service),
-            ListenerInterface::class
+            'Lazy listener of type "%s" is invalid; must be a callable, or have a method associated with it',
+            get_class($service)
         ));
     }
 

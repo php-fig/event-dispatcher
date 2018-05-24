@@ -5,7 +5,7 @@ namespace Psr\Event\Dispatcher;
 
 use Psr\Container\ContainerInterface;
 
-final class LazyListener implements ListenerInterface
+final class LazyListener
 {
     /**
      * @var ContainerInterface
@@ -32,19 +32,19 @@ final class LazyListener implements ListenerInterface
     /**
      * {@inheritDoc}
      */
-    public function listen(EventInterface $event) : EventInterface
+    public function __invoke(EventInterface $event) : void
     {
-        $listener = $this->getCallableListener(
+        $listener = $this->getListener(
             $this->container->get($this->service)
         );
 
-        return $listener($event);
+        $listener($event);
     }
 
     /**
      * @var mixed $service Service retrieved from container.
      */
-    private function getCallableListener($service) : callable
+    private function getListener($service) : callable
     {
         // Not an object, and not callable: invalid
         if (! is_object($service) && ! is_callable($service)) {
@@ -56,13 +56,7 @@ final class LazyListener implements ListenerInterface
             return $service;
         }
 
-        // Object, no method present, and implements ListenerInterface: return
-        // its listen() method
-        if (! $this->method && $service instanceof ListenerInterface) {
-            return [$listener, 'listen'];
-        }
-
-        // Object, no method present, not a listener, and not callable: invalid
+        // Object, no method present, and not callable: invalid
         if (! $this->method && ! is_callable($service)) {
             throw Exception\InvalidListenerException::forNonCallableInstance($service);
         }

@@ -6,7 +6,8 @@ namespace Psr\Event\Dispatcher;
 interface ListenerAggregateInterface
 {
     /**
-     * @return ListenerInterface[]
+     * @return iterable Can be an array, iterator, or generator; each item
+     *     returned MUST be callable.
      */
-    public function getListenersForEvent(EventInterface $event) : array;
+    public function getListenersForEvent(EventInterface $event) : iterable;
 }
