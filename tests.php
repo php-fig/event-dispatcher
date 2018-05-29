@@ -3,7 +3,7 @@ declare(strict_types=1);
 
 namespace Tester;
 
-use Psr\Event\Dispatcher\BasicDispatcher;
+use Psr\Event\Dispatcher\IntegratedDispatcher;
 use Psr\Event\Dispatcher\EventInterface;
 
 require_once 'vendor/autoload.php';
@@ -18,7 +18,7 @@ class EventThree implements EventInterface, FancyEventInterface {}
 
 function run_tests()
 {
-    $d = new BasicDispatcher();
+    $d = new IntegratedDispatcher();
 
     // This should fire twice.
     $d->addListener(function (EventOne $e) {

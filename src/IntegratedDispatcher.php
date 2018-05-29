@@ -4,7 +4,7 @@ declare(strict_types=1);
 namespace Psr\Event\Dispatcher;
 
 
-class BasicDispatcher implements DispatcherInterface, RegistrationInterface
+class IntegratedDispatcher implements DispatcherInterface, BasicRegistrationInterface, ListenerSetInterface
 {
 
     /**
@@ -14,8 +14,7 @@ class BasicDispatcher implements DispatcherInterface, RegistrationInterface
 
     public function dispatch(EventInterface $event): EventInterface
     {
-
-        foreach ($this->getRelevantListeners($event) as $listener) {
+        foreach ($this->getListenersFor($event) as $listener) {
             $event = $listener($event);
             // @todo Should this be a separate type of dispatcher, or must all dispatchers handle this?
             // @todo This turns the event dispatcher into a fallthrough pipeline, too. Is that OK?
@@ -27,7 +26,7 @@ class BasicDispatcher implements DispatcherInterface, RegistrationInterface
         return $event;
     }
 
-    protected function getRelevantListeners(EventInterface $event) : \Generator
+    public function getListenersFor(EventInterface $event) : \Generator
     {
         foreach ($this->listeners as $type => $listeners) {
             if ($event instanceof $type) {
