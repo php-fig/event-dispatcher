@@ -6,5 +6,7 @@ namespace Psr\Event\Dispatcher;
 
 interface EventInterface
 {
+    public function stopPropagation(bool $stop = true) : void;
 
+    public function stopped() : bool;
 }

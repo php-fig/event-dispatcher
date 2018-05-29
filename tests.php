@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Tester;
 
+use Psr\Event\Dispatcher\EventTrait;
 use Psr\Event\Dispatcher\IntegratedDispatcher;
 use Psr\Event\Dispatcher\EventInterface;
 
@@ -10,11 +11,15 @@ require_once 'vendor/autoload.php';
 
 interface FancyEventInterface {}
 
-class EventOne implements EventInterface {}
+class EventOne implements EventInterface {
+    use EventTrait;
+}
 
 class EventTwo extends EventOne implements FancyEventInterface {}
 
-class EventThree implements EventInterface, FancyEventInterface {}
+class EventThree implements EventInterface, FancyEventInterface {
+    use EventTrait;
+}
 
 function run_tests()
 {
