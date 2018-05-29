@@ -3,10 +3,12 @@ declare(strict_types=1);
 
 namespace Tester;
 
+use Psr\Event\Dispatcher\BasicDispatcher;
 use Psr\Event\Dispatcher\BasicEvent;
 use Psr\Event\Dispatcher\EventTrait;
 use Psr\Event\Dispatcher\IntegratedDispatcher;
 use Psr\Event\Dispatcher\EventInterface;
+use Psr\Event\Dispatcher\OrderedListenerSet;
 
 require_once 'vendor/autoload.php';
 
@@ -20,7 +22,7 @@ class EventThree implements EventInterface, FancyEventInterface {
     use EventTrait;
 }
 
-function run_tests()
+function test_unordered_listeners()
 {
     $d = new IntegratedDispatcher();
 
@@ -54,9 +56,36 @@ function run_tests()
     $d->dispatch(new EventThree());
 }
 
+function test_ordered_listener_set()
+{
+    $set = new OrderedListenerSet();
+    $d = new BasicDispatcher($set);
+
+    $set->addListener(function (EventOne $e) {
+        println('E', get_class($e));
+    }, 80);
+    $set->addListener(function (EventOne $e) {
+        println('R', get_class($e));
+    }, 90);
+    $set->addListener(function (EventOne $e) {
+        println('L', get_class($e));
+    }, 70);
+    $set->addListener(function (EventOne $e) {
+        println('C', get_class($e));
+    }, 100);
+    $set->addListener(function (EventOne $e) {
+        println('L', get_class($e));
+    }, 70);
+
+    $d->dispatch(new EventOne());
+
+}
+
 function println(...$s)
 {
     print implode(': ', $s) . PHP_EOL;
 }
 
-run_tests();
+test_unordered_listeners();
+println('---------');
+test_ordered_listener_set();
