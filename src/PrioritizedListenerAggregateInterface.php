@@ -5,5 +5,5 @@ namespace Psr\Event\Dispatcher;
 
 interface PrioritizedListenerAggregateInterface extends ListenerAggregateInterface
 {
-    public function listen(string $eventType, ListenerInterface $listener, int $priority = 1) : void;
+    public function listen(string $eventType, callable $listener, int $priority = 1) : void;
 }

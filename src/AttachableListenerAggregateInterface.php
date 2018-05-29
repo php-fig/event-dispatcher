@@ -12,5 +12,5 @@ interface AttachableListenerAggregateInterface extends ListenerAggregateInterfac
      * or extension. When an emitter emits a specific EventInterface instance,
      * it will trigger any listener that has specified that type or its subtype.
      */
-    public function listen(string $eventType, ListenerInterface $listener) : void;
+    public function listen(string $eventType, callable $listener) : void;
 }

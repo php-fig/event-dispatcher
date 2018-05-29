@@ -8,31 +8,16 @@ An object that is passed as a message to listeners. It also communicates to the
 dispatcher the result and status of listener propagation.
 
 ```php
+<?php
 interface EventInterface
 {
     /**
-     * Retrieve any data pertaining to the event. This will be data provided by
-     * the object that triggers the event and/or listeners called by the event
-     * dispatcher.
-     */
-    public function getData() : array;
-
-    /**
-     * Evolve the event to include a new set of data.
+     * Provide access to the event arguments, if any.
      *
-     * MUST return a NEW instance that returns the $data via getData();
+     * Implementations may have this return null if no event arguments are
+     * needed, or if immutable event arguments are unnecessary.
      */
-    public function withData(array $data) : self;
-
-    /**
-     * Evolve the event such that getData will include a new key with the datum provided.
-     *
-     * MUST return a NEW instance that includes $key in the data returned via
-     * getData(), with the value $datum.
-     *
-     * @param mixed $datum
-     */
-    public function with(string $key, $datum) : self;
+    public function getArguments() : ?EventArgumentsInterface;
 
     /**
      * Stop event propagation.
@@ -56,19 +41,43 @@ interface EventInterface
 }
 ```
 
-### Listener
+#### Event arguments
 
-An object listening to one or more events and doing something based on what it
-receives. It may evolve the event, including creating a new event with a result
-or stopping propagation. The emitter will inspect the event returned by the
-listener.
+In some cases, it may be useful to provide event arguments; these would reflect
+the state that caused the event to be emitted. To ensure that all listeners know
+this specific state, they should be immutable.
+
+The following interface is a _collaborator_ to the `EventInterface`, and
+provides an immutable container from which to fetch event arguments. It IS NOT
+required that implementations provide this, nor that events compose an instance.
 
 ```php
-interface ListenerInterface
+/**
+ * Provide access to event arguments, but prevent changes to them.
+ *
+ * Implementations of this interface MUST NOT allow changes to the
+ * arguments encapsulated within (with the exception that any argument
+ * provided by reference, including objects, can potentially change).
+ */
+interface EventArgumentsInterface
 {
-    public function listen(EventInterface $event) : EventInterface;
+    public function getArguments() : array;
+
+    /**
+     * @param mixed $default Default value to return if no matching argument
+     *     discovered.
+     * @return mixed
+     */
+    public function getArgument(string $name, $default = null);
 }
 ```
+
+### Listener
+
+Listeners are any PHP callable. They will _always_ be passed an `EventInterface`
+instance as the first argument; their return value will be ignored. If they wish
+to communicate information to the process emitting the event, they may do so via
+methods on the specific event instance designed for that purpose.
 
 ### Listener aggregates
 
@@ -80,12 +89,11 @@ instance.
 ```php
 interface ListenerAggregateInterface
 {
-    /**
-     * @return ListenerInterface[]
-     */
-    public function getListenersForEvent(EventInterface $event) : array;
+    public function getListenersForEvent(EventInterface $event) : iterable;
 }
 ```
+
+The return type is `iterable`, allowing for arrays, iterators, or generators.
 
 Typically, you'll want to _attach_ listeners to the aggregate. The simplest
 mechanism would be as follows:
@@ -100,7 +108,27 @@ interface AttachableListenerAggregateInterface extends ListenerAggregateInterfac
      * or extension. When an emitter emits a specific EventInterface instance,
      * it will trigger any listener that has specified that type or its subtype.
      */
-    public function listen(string $eventType, ListenerInterface $listener) : void;
+    public function listen(string $eventType, callable $listener) : void;
+}
+```
+
+Another possibility is to use reflection on the initial argument to the listener
+to determine the event type; the following interface demonstrates such a
+signature:
+
+```php
+interface ReflectableListenerAggregateInterface extends ListenerAggregateInterface
+{
+    /**
+     * Attach a listener
+     *
+     * If no $eventType is provided, reflects the first argument of the $listener
+     * to determine the type it accepts.
+     *
+     * When an emitter emits a specific EventInterface instance, it will
+     * trigger any listener that has specified that type or its subtype.
+     */
+    public function listen(callable $listener, string $eventType = null) : void;
 }
 ```
 
@@ -110,7 +138,7 @@ _prioritization_ of listeners. One possibility for that might be:
 ```php
 interface PrioritizedListenerAggregateInterface extends ListenerAggregateInterface
 {
-    public function listen(string $eventType, ListenerInterface $listener, int $priority = 1) : void;
+    public function listen(string $eventType, callable $listener, int $priority = 1) : void;
 }
 ```
 
@@ -119,38 +147,14 @@ Alternatives might allow appending/prepending based on another listener:
 ```php
 interface PositionableListenerAggregateInterface extends AttachableListenerAggregateInterface
 {
-    public function listenAfter(string $listenerTypeToAppend, string $eventType, ListenerInterface $newListener) : void;
-    public function listenBefore(string $listenerTypeToPrepend, string $eventType, ListenerInterface $newListener) : void;
+    public function listenAfter(string $listenerTypeToAppend, string $eventType, callable $newListener) : void;
+    public function listenBefore(string $listenerTypeToPrepend, string $eventType, callable $newListener) : void;
 }
 ```
 
 Of these interfaces, the only one REQUIRED by the specification would be
 `ListenerAggregateInterface`; all others could be defined in other
 specifications, within implementations, etc.
-
-### Results
-
-An object aggregating the results of all listeners; in each case, it is the
-return value of the listener just called, which will be an event instance.
-The aggregate is itself an iterator, allowing iteration of all results, but
-also provides convenience methods for obtaining the first or last results.
-
-```php
-use Iterator;
-
-interface ResultAggregateInterface extends Iterator
-{
-    /**
-     * Retrieve the event returned by the first listener.
-     */
-    public function first() : EventInterface;
-
-    /**
-     * Retrieve the event returned by the last listener.
-     */
-    public function last() : EventInterface;
-}
-```
 
 ### Emitter
 
@@ -164,33 +168,17 @@ interface EmitterInterface
 {
     /**
      * Emit the given event to all attached listeners.
-     *
-     * @throws EventTypeMismatchExceptionInterface
      */
-    public function emit(EventInterface $event) : ResultAggregateInterface;
-}
-
-interface EventTypeMismatchExceptionInterface
-{
+    public function emit(EventInterface $event) : void;
 }
 ```
-
-One note: it's possible for a listener to return an event of a different type.
-As such, the emitter needs to verify that the event returned is of the same type
-or subtype before continuing dispatch of listeners. If it is not, it should
-raise an `EventTypeMismatchExceptionInterface`, ideally reporting the original
-event type, and the type of the latest event returned.
 
 ## Utilities
 
 Some utilties might be interesting to provide. These include:
 
 - a trait defining common functionality of all event types.
-- a standard result aggregate implementation.
-- a decorator for callable listeners, allowing attaching arbitrary callables as
-  listeners, or listeners that typehint against more specific event
-  implementations. This would have a corresponding utility function for more
-  simple DX.
+- a default implementation of `EventArgumentsInterface`.
 - a decorator for _lazy_ listeners (where the listener body pulls a named
   service from a composed PSR-11 container). This would have a corresponding
   utility function for more simple DX.
@@ -198,58 +186,21 @@ Some utilties might be interesting to provide. These include:
 ### Event trait
 
 ```php
-trait EventDataTrait
+trait EventTrait
 {
     /**
-     * @var array
+     * @var ?EventArgumentsInterface
      */
-    private $data = [];
+    private $arguments;
 
     /**
      * @var bool
      */
     private $isStopped = false;
 
-    /**
-     * @var null|mixed
-     */
-    private $result;
-
-    /**
-     * Retrieve any data pertaining to the event. This will be data provided by
-     * the object that triggers the event and/or listeners called by the event
-     * dispatcher.
-     */
-    public function getData() : array
+    public function getArguments() : ?EventArgumentsInterface
     {
-        return $this->data;
-    }
-
-    /**
-     * Evolve the event to include a new set of data.
-     *
-     * MUST return a NEW instance that returns the $data via getData();
-     */
-    public function withData(array $data) : self
-    {
-        $event = clone $this;
-        $event->data = $data;
-        return $event;
-    }
-
-    /**
-     * Evolve the event such that getData will include a new key with the datum provided.
-     *
-     * MUST return a NEW instance that includes $key in the data returned via
-     * getData(), with the value $datum.
-     *
-     * @param mixed $datum
-     */
-    public function with(string $key, $datum) : self
-    {
-        $data = $this->getData();
-        $data[$key] = $datum;
-        return $this->withData($data);
+        return $this->arguments;
     }
 
     /**
@@ -262,11 +213,9 @@ trait EventDataTrait
      * MUST return a NEW instance that will cause isStopped to return boolean
      * true.
      */
-    public function stopPropagation() : self
+    public function stopPropagation() : void
     {
-        $event = clone $this;
         $event->isStopped = true;
-        return $event;
     }
 
     /**
@@ -282,119 +231,54 @@ trait EventDataTrait
 }
 ```
 
-### Result aggregate
-
-Remember, `ResultAggregateInterface` extends `Iterator`, requiring additional
-methods. This implementation also provides a `push()` method as a simple
-mechanism for an emitter to add results to the aggregate.
+### Event arguments
 
 ```php
-final class ResultAggregate implements ResultAggregateInterface
+use InvalidArgumentException;
+
+/**
+ * Default implementation for immutable event arguments.
+ */
+class EventArguments implements EventArgumentsInterface
 {
     /**
-     * @var EventInterface[]
+     * @var array
      */
-    private $results = [];
+    private $arguments;
 
-    /**
-     * Push a result into the aggregate.
-     *
-     * @param EventInterface $result
-     */
-    public function push(EventInterface $result) : void
+    public function __construct(array $arguments)
     {
-        $this->results[] = $result;
+        if (empty($arguments)
+            || array_keys($arguments) === range(0, count($arguments) - 1)
+        ) {
+            throw new InvalidArgumentException(sprintf(
+                '%s only accepts associative arrays to its constructor',
+                __CLASS__
+            ));
+        }
+
+        $this->arguments = $arguments;
     }
 
-    /**
-     * Retrieve the first result.
-     */
-    public function first() : EventInterface
+    public function getArguments() : array
     {
-        $this->rewind();
-        return $this->current();
-    }
-
-    /**
-     * Retrieve the last result.
-     */
-    public function last() : EventInterface
-    {
-        return end($this->results);
+        return $this->arguments;
     }
 
     /**
-     * @return EventInterface Not type-hinted, due to extending Iterator.
+     * @param mixed $default Default value to return if no matching argument
+     *     discovered.
+     * @return mixed
      */
-    public function current()
+    public function getArgument(string $name, $default = null)
     {
-        current($this->results);
-    }
-
-    /**
-     * @return null|false|string|int
-     */
-    public function key()
-    {
-        key($this->results);
-    }
-
-    public function next() : void
-    {
-        next($this->results);
-    }
-
-    public function rewind() : void
-    {
-        reset($this->results);
-    }
-
-    public function valid() : bool
-    {
-        $key = $this->key();
-        return null !== $key && false !== $key;
+        if (! array_key_exists($name, $this->arguments)) {
+            return $default;
+        }
+        return $this->arguments[$name];
     }
 }
 ```
-
-### Callable listener decorator
-
-This class could be used to decorate anonymous functions, or to establish an
-existing instance method as an event listener. This latter is particularly
-powerful, as it allows a listener to typehint against a more specific event
-type, and thus delegate to PHP's type system.
-
-```php
-final class CallableListener implements ListenerInterface
-{
-    /**
-     * @var callable
-     */
-    private $callback;
-
-    public function __construct(callable $callback)
-    {
-        $this->callback = $callback;
-    }
-
-    public function listen(EventInterface $event) : EventInterface
-    {
-        return ($this->callback)($event);
-    }
-}
-```
-
-The corresponding utility function:
-
-```php
-function listener(callable $callback) : CallableListener
-{
-    return new CallableListener($callback);
-}
-```
-
-> The utility function would be defined in the utility namespace, or the
-> implementation namespace.
 
 ### Lazy listeners
 
@@ -403,12 +287,8 @@ of having the expense of loading the listener if it is never triggered. It
 leverages a PSR-11 container.
 
 This implementation provides the ability to specify a specific method, allowing
-a generic callable listener; if no method is provided, the implementation:
-
-- determines if the instance is a `ListenerInterface`; if so, it uses the
-  `listen()` method.
-- determines if the instance is callable; if so, it uses the `__invoke()`
-  method.
+a generic callable listener; if no method is provided, the implementation
+determines if the instance is callable; if so, it uses the `__invoke()` method.
 
 The implementation detailed below includes some implementation-specific
 exceptions; as such, it is likely best suited to a util or implementation
@@ -417,7 +297,7 @@ package.
 ```php
 use Psr\Container\ContainerInterface;
 
-final class LazyListener implements ListenerInterface
+final class LazyListener
 {
     /**
      * @var ContainerInterface
@@ -444,19 +324,19 @@ final class LazyListener implements ListenerInterface
     /**
      * {@inheritDoc}
      */
-    public function listen(EventInterface $event) : EventInterface
+    public function __invoke(EventInterface $event) : void
     {
-        $listener = $this->getCallableListener(
+        $listener = $this->getListener(
             $this->container->get($this->service)
         );
 
-        return $listener($event);
+        $listener($event);
     }
 
     /**
      * @var mixed $service Service retrieved from container.
      */
-    private function getCallableListener($service) : callable
+    private function getListener($service) : callable
     {
         // Not an object, and not callable: invalid
         if (! is_object($service) && ! is_callable($service)) {
@@ -468,13 +348,7 @@ final class LazyListener implements ListenerInterface
             return $service;
         }
 
-        // Object, no method present, and implements ListenerInterface: return
-        // its listen() method
-        if (! $this->method && $service instanceof ListenerInterface) {
-            return [$listener, 'listen'];
-        }
-
-        // Object, no method present, not a listener, and not callable: invalid
+        // Object, no method present, and not callable: invalid
         if (! $this->method && ! is_callable($service)) {
             throw Exception\InvalidListenerException::forNonCallableInstance($service);
         }
@@ -554,9 +428,9 @@ public function doSomething()
 {
     // some work is done...
     $event = (new SomeOtherEventType())->withData($dataForEvent);
-    $results = $this->emitter->emit($event);
-    if ($results->last()->getSomeEventSpecificValue() instanceof SomethingOfInterest) {
-        return $results->last()->getSomeEventSpecificValue();
+    $this->emitter->emit($event);
+    if ($event->getSomeEventSpecificValue() instanceof SomethingOfInterest) {
+        return $event->getSomeEventSpecificValue();
     }
     // do more work...
 }
@@ -573,7 +447,7 @@ class AnotherListenerName
         $value = $event->getData()['foo'] ?? 'default';
 
         // return a result with the event:
-        return $event->with('result', $result);
+        return $event->setSomeEventSpecificValue($result);
     }
 }
 ```
@@ -594,9 +468,8 @@ public function listen(EventInterface $event) : EventInterface
     $value = $event->getData()['foo'] ?? false;
 
     if (false === $value) {
-        return $event
-            ->stopPropagation()
-            ->with('result', new InvalidDataResult());
+        $event->stopPropagation();
+        $event->setEventSpecificValue(new InvalidDataResult());
     }
 
     // otherwise, continue processing
@@ -617,17 +490,14 @@ class Emitter implements EmitterInterface
         $this->listeners = $listeners;
     }
 
-    public function emit(EventInterface $event) : ResultAggregateInterface
+    public function emit(EventInterface $event) : void
     {
-        $results = new ResultAggregate();
         foreach ($listeners->getListenersForEvent($event) as $listener) {
-            $event = $listener->listen($event);
-            $results->push($event);
+            $listener($event);
             if ($event->isStopped()) {
                 break;
             }
         }
-        return $results;
     }
 }
 ```
@@ -668,7 +538,7 @@ class PrioritizedListenerAggregate implements PrioritizedListenerAggregateInterf
             return [];
         }
 
-        $this->listeners[$event]->toArray();
+        $this->listeners[$event];
     }
 }
 ```

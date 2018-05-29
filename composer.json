@@ -16,8 +16,7 @@
     },
     "autoload": {
         "files": [
-            "src/functions/lazy_listener.php",
-            "src/functions/listener.php"
+            "src/functions/lazy_listener.php"
         ],
         "psr-4": {
             "Psr\\Event\\Dispatcher\\": "src/"
