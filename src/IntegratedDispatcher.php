@@ -17,9 +17,7 @@ class IntegratedDispatcher implements DispatcherInterface, BasicRegistrationInte
     public function dispatch(EventInterface $event): EventInterface
     {
         foreach ($this->getListenersFor($event) as $listener) {
-            $event = $listener($event);
-            // @todo Should this be a separate type of dispatcher, or must all dispatchers handle this?
-            // @todo This turns the event dispatcher into a fallthrough pipeline, too. Is that OK?
+            $listener($event);
             if ($event->stopped()) {
                 break;
             }

@@ -27,32 +27,26 @@ function run_tests()
     // This should fire twice.
     $d->addListener(function (EventOne $e) {
         println('A', get_class($e));
-        return $e;
     });
     // This should fire once.
     $d->addListener(function (EventTwo $e) {
         println('B', get_class($e));
-        return $e;
     });
     // This should fire once.
     $d->addListener(function (EventThree $e) {
         println('C', get_class($e));
-        return $e;
     });
     // This should fire twice.
     $d->addListener(function (FancyEventInterface $e) {
         println('D', get_class($e));
-        return $e;
     });
     // This should never fire, nor error.
     $d->addListener(function (EventNone $e) {
         println('E', get_class($e));
-        return $e;
     });
     // This should never fire, nor error.
     $d->addListener(function (EventNone $e) {
         println('F', get_class($e));
-        return $e;
     }, EventNone::class);
 
     $d->dispatch(new EventOne());
