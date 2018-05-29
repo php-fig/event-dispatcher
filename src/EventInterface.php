@@ -19,11 +19,8 @@ interface EventInterface
      * Once called, when handling returns to the dispatcher, the dispatcher MUST
      * stop calling any remaining listeners and return handling back to the
      * target object.
-     *
-     * MUST return a NEW instance that will cause isStopped to return boolean
-     * true.
      */
-    public function stopPropagation() : self;
+    public function stopPropagation() : void;
 
     /**
      * Is propagation stopped?
