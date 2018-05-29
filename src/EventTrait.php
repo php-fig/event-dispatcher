@@ -32,7 +32,7 @@ trait EventTrait
      */
     public function stopPropagation() : void
     {
-        $event->isStopped = true;
+        $this->isStopped = true;
     }
 
     /**
