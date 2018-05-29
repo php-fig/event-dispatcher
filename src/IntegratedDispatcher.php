@@ -33,11 +33,8 @@ class IntegratedDispatcher implements DispatcherInterface, BasicRegistrationInte
         $this->listeners->addListener($listener, $type);
     }
 
-    public function getListenersFor(EventInterface $event) : \Generator
+    public function getListenersFor(EventInterface $event) : iterable
     {
         yield from $this->listeners->getListenersFor($event);
     }
-
-
-
 }

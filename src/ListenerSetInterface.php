@@ -5,5 +5,5 @@ namespace Psr\Event\Dispatcher;
 
 interface ListenerSetInterface
 {
-    public function getListenersFor(EventInterface $event): \Generator;
+    public function getListenersFor(EventInterface $event): iterable;
 }

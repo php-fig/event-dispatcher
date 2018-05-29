@@ -12,7 +12,7 @@ class UnorderedListenerSet implements ListenerSetInterface, BasicRegistrationInt
      */
     protected $listeners;
 
-    public function getListenersFor(EventInterface $event) : \Generator
+    public function getListenersFor(EventInterface $event) : iterable
     {
         foreach ($this->listeners as $type => $listeners) {
             if ($event instanceof $type) {
