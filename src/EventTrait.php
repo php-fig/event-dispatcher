@@ -8,7 +8,7 @@ trait EventTrait
 {
     protected $stop = false;
 
-    public function stopPropagation(bool $stop = true) : void
+    public function stopPropagation(bool $stop = true) : EventInterface
     {
         $this->stop = $stop;
     }
