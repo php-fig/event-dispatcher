@@ -33,7 +33,10 @@ class CompiledListenerCollector implements \IteratorAggregate
     public function addListenerService(string $serviceName, string $methodName, string $type, $priority = 0): void
     {
         // Encode a service call as a colon-delimited string.
-        $this->addListener("$serviceName:$methodName", $priority, $type);
+        $this->listeners->insert([
+            'type'=> $type,
+            'listener' => "$serviceName:$methodName"
+        ], $priority);
     }
 
     public function getIterator()

@@ -22,11 +22,18 @@ class ListenerCompiler
 
         // The ordered queue will read this in order for us, so the result gets built already in order.
         foreach ($listeners as $listener) {
-            // A function callable.
-            if (is_string($listener['listener']) && strpos($listener['listener'], ':') === false) {
-                fwrite($stream, $this->createFunctionEntry($listener['listener'], $listener['type']));
+            if (is_string($listener['listener'])) {
+                // A function callable.
+                if (strpos($listener['listener'], ':') === false) {
+                    fwrite($stream, $this->createFunctionEntry($listener['listener'], $listener['type']));
+                }
+                // A service callable.
+                else {
+                    list($serviceName, $methodName) = explode(':', $listener['listener']);
+                    fwrite($stream, $this->createServiceEntry($serviceName, $methodName, $listener['type']));
+                }
             }
-            // This means it's a static method call on a class.
+            // A static method callable.
             elseif (is_array($listener)) {
                 fwrite($stream, $this->createStaticMethodEntry($listener['listener'], $listener['type']));
             }
@@ -50,6 +57,7 @@ class $class extends CompiledListenerSetBase
 
     protected function init() : void
     {    
+        \$container = \$this->container;
 
 END;
 
@@ -70,8 +78,8 @@ END;
 
         return <<<END
         \$this->listeners[] = [
-          'type' => '$type',
-          'listener' => '$listener',
+            'type' => '$type',
+            'listener' => '$listener',
         ];
 
 END;
@@ -84,8 +92,23 @@ END;
 
         return <<<END
         \$this->listeners[] = [
-          'type' => '$type',
-          'listener' => ['$listener[0]', '$listener[1]'],
+            'type' => '$type',
+            'listener' => ['$listener[0]', '$listener[1]'],
+        ];
+
+END;
+    }
+
+    protected function createServiceEntry(string $serviceName, string $methodName, string $type)
+    {
+        $listener = str_replace('\\', '\\\\', $type);
+
+        return <<<END
+        \$this->listeners[] = [
+            'type' => '$type',
+            'listener' => function(EventInterface \$event) use (\$container) {
+                \$container->get('$serviceName')->$methodName(\$event);
+          },
         ];
 
 END;

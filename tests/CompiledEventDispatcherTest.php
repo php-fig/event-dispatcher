@@ -34,6 +34,14 @@ class Listen
     }
 }
 
+class ListenService
+{
+    public static function listen(CollectingEvent $event)
+    {
+        $event->add('D');
+    }
+}
+
 class CompiledEventDispatcherTest extends TestCase
 {
     function testFunctionCompile()
@@ -41,9 +49,13 @@ class CompiledEventDispatcherTest extends TestCase
         $set = new CompiledListenerCollector();
         $compiler = new ListenerCompiler();
 
+        $container = new MockContainer();
+        $container->addService('D', new ListenService());
+
         $set->addListener('\\Crell\\EventDispatcher\\Test\\listenerA');
         $set->addListener('\\Crell\\EventDispatcher\\Test\\listenerB');
         $set->addListener([Listen::class, 'listen']);
+        $set->addListenerService('D', 'listen', CollectingEvent::class);
 
         $out = fopen('php://temp', 'w');
         $compiler->compile($set, $out);
