@@ -57,7 +57,7 @@ END;
 
     protected function createClosing() : string
     {
-        return <<<END
+        return <<<'END'
     }
 }
 END;
