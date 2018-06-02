@@ -13,9 +13,17 @@
     "require": {
         "php": ">=7.1.0"
     },
+    "require-dev": {
+        "phpunit/phpunit": "^7.2"
+    },
     "autoload": {
         "psr-4": {
             "Psr\\Event\\Dispatcher\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Psr\\Event\\Dispatcher\\Test\\": "tests"
         }
     },
     "extra": {
