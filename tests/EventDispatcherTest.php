@@ -11,6 +11,7 @@ use Psr\Event\Dispatcher\EventTrait;
 use Psr\Event\Dispatcher\IntegratedDispatcher;
 use Psr\Event\Dispatcher\OrderedListenerSet;
 use Psr\Event\Dispatcher\RelativeListenerSet;
+use Psr\Event\Dispatcher\ServiceListenerSet;
 
 interface FancyEventInterface {}
 
@@ -133,5 +134,53 @@ class EventDispatcherTest extends TestCase
         $this->assertEquals('CRELL', implode($out));
     }
 
+    function testServiceLisenerSet()
+    {
+        $container = new MockContainer();
 
+        $container->addService('A', new class {
+            public function listen(CollectingEvent $event) {
+                $event->add('A');
+            }
+        });
+        $container->addService('B', new class {
+            public function listen(CollectingEvent $event) {
+                $event->add('B');
+            }
+        });
+        $container->addService('C', new class {
+            public function listen(CollectingEvent $event) {
+                $event->add('C');
+            }
+        });
+        $container->addService('R', new class {
+            public function listen(CollectingEvent $event) {
+                $event->add('R');
+            }
+        });
+        $container->addService('E', new class {
+            public function listen(CollectingEvent $event) {
+                $event->add('E');
+            }
+        });
+        $container->addService('L', new class {
+            public function hear(CollectingEvent $event) {
+                $event->add('L');
+            }
+        });
+
+        $set = new ServiceListenerSet($container);
+        $d = new BasicDispatcher($set);
+
+        $set->addListenerService('L', 'hear', CollectingEvent::class, 70);
+        $set->addListenerService('E', 'listen', CollectingEvent::class, 80);
+        $set->addListenerService('C', 'listen', CollectingEvent::class, 100);
+        $set->addListenerService('L', 'hear', CollectingEvent::class); // Defaults to 0
+        $set->addListenerService('R', 'listen', CollectingEvent::class, 90);
+
+        $event = new CollectingEvent();
+        $d->dispatch($event);
+
+        $this->assertEquals('CRELL', implode($event->result()));
+    }
 }
