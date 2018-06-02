@@ -12,10 +12,12 @@
     ],
     "require": {
         "php": ">=7.1.0",
-        "psr/container": "^1.0"
+        "psr/container": "^1.0",
+        "zendframework/zend-code": "^3.3"
     },
     "require-dev": {
-        "phpunit/phpunit": "^7.2"
+        "phpunit/phpunit": "^7.2",
+        "php-vfs/php-vfs": "*@stable"
     },
     "autoload": {
         "psr-4": {
