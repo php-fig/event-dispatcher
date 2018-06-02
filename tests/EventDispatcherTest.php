@@ -4,10 +4,13 @@ declare(strict_types=1);
 namespace Crell\EventDispatcher\Test;
 
 use PHPUnit\Framework\TestCase;
+use Psr\Event\Dispatcher\BasicDispatcher;
 use Psr\Event\Dispatcher\BasicEvent;
 use Psr\Event\Dispatcher\EventInterface;
 use Psr\Event\Dispatcher\EventTrait;
 use Psr\Event\Dispatcher\IntegratedDispatcher;
+use Psr\Event\Dispatcher\OrderedListenerSet;
+use Psr\Event\Dispatcher\RelativeListenerSet;
 
 interface FancyEventInterface {}
 
@@ -20,9 +23,9 @@ class EventThree implements EventInterface, FancyEventInterface {
 }
 
 
-class UnorderedListenerSetTest extends TestCase
+class EventDispatcherTest extends TestCase
 {
-    function test_unordered_listener_set()
+    function testUnorderedListnerSet()
     {
         $d = new IntegratedDispatcher();
 
@@ -73,4 +76,62 @@ class UnorderedListenerSetTest extends TestCase
         $this->assertEquals(0, $counter->countOf('E'));
         $this->assertEquals(0, $counter->countOf('F'));
     }
+
+    function testOrderedListnerSet()
+    {
+        $set = new OrderedListenerSet();
+        $d = new BasicDispatcher($set);
+
+        $out = [];
+
+        $set->addListener(function (EventOne $e) use (&$out) {
+            $out[] = 'E';
+        }, 80);
+        $set->addListener(function (EventOne $e) use (&$out) {
+            $out[] = 'R';
+        }, 90);
+        $set->addListener(function (EventOne $e) use (&$out) {
+            $out[] = 'L';
+        }, 70);
+        $set->addListener(function (EventOne $e) use (&$out) {
+            $out[] = 'C';
+        }, 100);
+        $set->addListener(function (EventOne $e) use (&$out) {
+            $out[] = 'L';
+        }, 70);
+
+        $d->dispatch(new EventOne());
+
+        $this->assertEquals('CRELL', implode($out));
+    }
+
+    function testRelativeListenerSet()
+    {
+        $set = new RelativeListenerSet();
+        $d = new BasicDispatcher($set);
+
+        $out = [];
+
+        $e = $set->addListener(function (EventOne $e) use (&$out) {
+            $out[] = 'E';
+        });
+        $r = $set->addListenerBefore(function (EventOne $e) use (&$out) {
+            $out[] = 'R';
+        }, $e);
+        $l1 = $set->addListenerAfter(function (EventOne $e) use (&$out) {
+            $out[] = 'L';
+        }, $e);
+        $c = $set->addListenerBefore(function (EventOne $e) use (&$out) {
+            $out[] = 'C';
+        }, $r);
+        $l2 = $set->addListenerAfter(function (EventOne $e) use (&$out) {
+            $out[] = 'L';
+        }, $l1);
+
+        $d->dispatch(new EventOne());
+
+        $this->assertEquals('CRELL', implode($out));
+    }
+
+
 }
