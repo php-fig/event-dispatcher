@@ -26,22 +26,29 @@ function listenerB(CollectingEvent $event) : void
     $event->add('B');
 }
 
+class Listen
+{
+    public static function listen(CollectingEvent $event)
+    {
+        $event->add('C');
+    }
+}
+
 class CompiledEventDispatcherTest extends TestCase
 {
     function testFunctionCompile()
     {
-
         $set = new CompiledListenerCollector();
         $compiler = new ListenerCompiler();
 
         $set->addListener('\\Crell\\EventDispatcher\\Test\\listenerA');
         $set->addListener('\\Crell\\EventDispatcher\\Test\\listenerB');
+        $set->addListener([Listen::class, 'listen']);
 
         $out = fopen('php://temp', 'w');
         $compiler->compile($set, $out);
 
         fseek($out, 0);
-
         $output = stream_get_contents($out);
 
         print $output;

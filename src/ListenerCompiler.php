@@ -26,6 +26,10 @@ class ListenerCompiler
             if (is_string($listener['listener']) && strpos($listener['listener'], ':') === false) {
                 fwrite($stream, $this->createFunctionEntry($listener['listener'], $listener['type']));
             }
+            // This means it's a static method call on a class.
+            elseif (is_array($listener)) {
+                fwrite($stream, $this->createStaticMethodEntry($listener['listener'], $listener['type']));
+            }
         }
 
         fwrite($stream, $this->createClosing());
@@ -73,9 +77,18 @@ END;
 END;
     }
 
-    protected function createStaticMethodEntry(string $listener, string $type)
+    protected function createStaticMethodEntry(array $listener, string $type)
     {
+        $listener = str_replace('\\', '\\\\', $listener);
+        $type = str_replace('\\', '\\\\', $type);
 
+        return <<<END
+        \$this->listeners[] = [
+          'type' => '$type',
+          'listener' => ['$listener[0]', '$listener[1]'],
+        ];
+
+END;
     }
 
 }
