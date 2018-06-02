@@ -3,18 +3,9 @@ declare(strict_types=1);
 
 namespace Crell\EventDispatcher\Test;
 
+use Crell\EventDispatcher\CompiledListenerCollector;
+use Crell\EventDispatcher\ListenerCompiler;
 use PHPUnit\Framework\TestCase;
-use Psr\Event\Dispatcher\BasicDispatcher;
-use Psr\Event\Dispatcher\BasicEvent;
-use Psr\Event\Dispatcher\CompiledListenerCollector;
-use Psr\Event\Dispatcher\EventInterface;
-use Psr\Event\Dispatcher\EventTrait;
-use Psr\Event\Dispatcher\IntegratedDispatcher;
-use Psr\Event\Dispatcher\ListenerCompiler;
-use Psr\Event\Dispatcher\OrderedListenerSet;
-use Psr\Event\Dispatcher\RelativeListenerSet;
-use Psr\Event\Dispatcher\ServiceListenerSet;
-
 
 function listenerA(CollectingEvent $event) : void
 {

@@ -19,7 +19,8 @@
     },
     "autoload": {
         "psr-4": {
-            "Psr\\Event\\Dispatcher\\": "src/"
+            "Psr\\Event\\Dispatcher\\": "src/",
+            "Crell\\EventDispatcher\\": "impl/"
         }
     },
     "autoload-dev": {

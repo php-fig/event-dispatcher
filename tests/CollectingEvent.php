@@ -4,13 +4,11 @@ declare(strict_types=1);
 namespace Crell\EventDispatcher\Test;
 
 
-use Psr\Event\Dispatcher\EventInterface;
-use Psr\Event\Dispatcher\EventTrait;
+use Crell\EventDispatcher\BasicEvent;
+use Crell\EventDispatcher\EventTrait;
 
-class CollectingEvent implements EventInterface
+class CollectingEvent extends BasicEvent
 {
-    use EventTrait;
-
     protected $out = [];
 
     public function add(string $val) : void

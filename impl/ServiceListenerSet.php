@@ -1,10 +1,11 @@
 <?php
 declare(strict_types=1);
 
-namespace Psr\Event\Dispatcher;
+namespace Crell\EventDispatcher;
 
 
 use Psr\Container\ContainerInterface;
+use Psr\Event\Dispatcher\EventInterface;
 
 class ServiceListenerSet extends OrderedListenerSet
 {

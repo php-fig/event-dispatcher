@@ -3,15 +3,15 @@ declare(strict_types=1);
 
 namespace Crell\EventDispatcher\Test;
 
+use Crell\EventDispatcher\BasicDispatcher;
+use Crell\EventDispatcher\BasicEvent;
+use Crell\EventDispatcher\EventTrait;
+use Crell\EventDispatcher\IntegratedDispatcher;
+use Crell\EventDispatcher\OrderedListenerSet;
+use Crell\EventDispatcher\RelativeListenerSet;
+use Crell\EventDispatcher\ServiceListenerSet;
 use PHPUnit\Framework\TestCase;
-use Psr\Event\Dispatcher\BasicDispatcher;
-use Psr\Event\Dispatcher\BasicEvent;
 use Psr\Event\Dispatcher\EventInterface;
-use Psr\Event\Dispatcher\EventTrait;
-use Psr\Event\Dispatcher\IntegratedDispatcher;
-use Psr\Event\Dispatcher\OrderedListenerSet;
-use Psr\Event\Dispatcher\RelativeListenerSet;
-use Psr\Event\Dispatcher\ServiceListenerSet;
 
 interface FancyEventInterface {}
 
@@ -26,7 +26,7 @@ class EventThree implements EventInterface, FancyEventInterface {
 
 class EventDispatcherTest extends TestCase
 {
-    function testUnorderedListnerSet()
+    function testUnorderedListenerSet()
     {
         $d = new IntegratedDispatcher();
 

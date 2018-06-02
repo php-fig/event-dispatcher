@@ -1,8 +1,12 @@
 <?php
 declare(strict_types=1);
 
-namespace Psr\Event\Dispatcher;
+namespace Crell\EventDispatcher;
 
+
+use Psr\Event\Dispatcher\BasicRegistrationInterface;
+use Psr\Event\Dispatcher\EventInterface;
+use Psr\Event\Dispatcher\ListenerSetInterface;
 
 class UnorderedListenerSet implements ListenerSetInterface, BasicRegistrationInterface
 {

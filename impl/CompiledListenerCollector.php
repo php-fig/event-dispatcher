@@ -1,8 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace Psr\Event\Dispatcher;
-
+namespace Crell\EventDispatcher;
 
 class CompiledListenerCollector implements \IteratorAggregate
 {
