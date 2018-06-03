@@ -11,6 +11,10 @@ class OrderedListenerSet implements ListenerSetInterface
 {
     use ParameterDeriverTrait;
 
+    protected $microPriority = 0;
+
+    const MICRO_PRIORITY_STEP = 0.01;
+
     /**
      * @var \SplPriorityQueue
      */
@@ -32,6 +36,9 @@ class OrderedListenerSet implements ListenerSetInterface
 
     public function addListener(callable $listener, $priority = 0, string $type = null): void
     {
+        if ($priority == 0) {
+            $priority += ($this->microPriority += static::MICRO_PRIORITY_STEP);
+        }
         $this->listeners->insert([
             'type'=> $type ?? $this->getParameterType($listener),
             'listener' => $listener

@@ -26,7 +26,7 @@ class EventThree implements EventInterface, FancyEventInterface {
 
 class EventDispatcherTest extends TestCase
 {
-    function testUnorderedListenerSet()
+    function testUnorderedListenerSet() : void
     {
         $d = new IntegratedDispatcher();
 
@@ -78,7 +78,7 @@ class EventDispatcherTest extends TestCase
         $this->assertEquals(0, $counter->countOf('F'));
     }
 
-    function testOrderedListnerSet()
+    function testOrderedListenerSet() : void
     {
         $set = new OrderedListenerSet();
         $d = new BasicDispatcher($set);
@@ -104,6 +104,38 @@ class EventDispatcherTest extends TestCase
         $d->dispatch(new EventOne());
 
         $this->assertEquals('CRELL', implode($out));
+    }
+
+    function _testOrderedSetDefaultsOrderedLexically() : void
+    {
+        // It seems that SplPriorityQueue is acting LIFO, not FIFO, within a given priority. That's weird.  I tried
+        // addressing that with floating point priorities but it seems to be ignored, which leads me to think it only
+        // supports integer priorities.  This needs more investigation when I'm not on an airplane.  Until then this
+        // test is disabled.
+
+        $set = new OrderedListenerSet();
+        $d = new BasicDispatcher($set);
+
+        $set->addListener(function (CollectingEvent $event) {
+            $event->add('E');
+        }, 0);
+        $set->addListener(function (CollectingEvent $event) {
+            $event->add('R');
+        }, 90);
+        $set->addListener(function (CollectingEvent $event) {
+            $event->add('L');
+        }, 0);
+        $set->addListener(function (CollectingEvent $event) {
+            $event->add('C');
+        }, 100);
+        $set->addListener(function (CollectingEvent $event) {
+            $event->add('L');
+        }, 0);
+
+        $event = new CollectingEvent();
+        $d->dispatch($event);
+
+        $this->assertEquals('CRELL', implode($event->result()));
     }
 
     function testRelativeListenerSet()
@@ -134,7 +166,7 @@ class EventDispatcherTest extends TestCase
         $this->assertEquals('CRELL', implode($out));
     }
 
-    function testServiceLisenerSet()
+    function testServiceLisenerSet() : void
     {
         $container = new MockContainer();
 
