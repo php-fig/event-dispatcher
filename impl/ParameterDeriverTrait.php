@@ -6,8 +6,10 @@ namespace Crell\EventDispatcher;
 
 trait ParameterDeriverTrait
 {
-    protected function getParameterType(callable $listener) : string
+    protected function getParameterType($listener) : string
     {
+        // We can't type hint $listner as it could be an array, and arrays are not callable. Sometimes. Bah, PHP.
+
         // This try-catch is only here to keep OCD linters happy about uncaught reflection exceptions.
         try {
             // If the handler has no type on its parameter it is invalid.
