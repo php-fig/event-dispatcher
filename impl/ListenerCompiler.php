@@ -50,13 +50,14 @@ declare(strict_types=1);
 
 namespace $namespace;
 
-use Psr\EventDispatcher\CompiledListenerSetBase;
+use Crell\EventDispatcher\CompiledListenerSetBase;
+use Psr\Event\Dispatcher\EventInterface;
 
 class $class extends CompiledListenerSetBase
 {
 
     protected function init() : void
-    {    
+    {
         \$container = \$this->container;
 
 END;

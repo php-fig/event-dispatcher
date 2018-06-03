@@ -5,7 +5,6 @@ namespace Crell\EventDispatcher\Test;
 
 
 use Crell\EventDispatcher\BasicEvent;
-use Crell\EventDispatcher\EventTrait;
 
 class CollectingEvent extends BasicEvent
 {
