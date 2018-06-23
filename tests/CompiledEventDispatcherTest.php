@@ -62,7 +62,7 @@ class CompiledEventDispatcherTest extends TestCase
         $collector->addListener([Listen::class, 'listen']);
         $collector->addListenerService('D', 'listen', CollectingEvent::class);
 
-        // Write the generated compiler out ot a temp file.
+        // Write the generated compiler out to a temp file.
         $filename = tempnam(sys_get_temp_dir(), 'compiled');
         $out = fopen($filename, 'w');
         $compiler->compile($collector, $out, $class, $namespace);
