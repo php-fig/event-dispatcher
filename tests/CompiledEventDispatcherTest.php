@@ -62,18 +62,23 @@ class CompiledEventDispatcherTest extends TestCase
         $collector->addListener([Listen::class, 'listen']);
         $collector->addListenerService('D', 'listen', CollectingEvent::class);
 
-        // Write the generated compiler out to a temp file.
-        $filename = tempnam(sys_get_temp_dir(), 'compiled');
-        $out = fopen($filename, 'w');
-        $compiler->compile($collector, $out, $class, $namespace);
-        fclose($out);
+        try {
+            // Write the generated compiler out to a temp file.
+            $filename = tempnam(sys_get_temp_dir(), 'compiled');
+            $out = fopen($filename, 'w');
+            $compiler->compile($collector, $out, $class, $namespace);
+            fclose($out);
 
-        // Now include it.  If there's a parse error PHP will throw a ParseError and PHPUnit will catch it for us.
-        include($filename);
+            // Now include it.  If there's a parse error PHP will throw a ParseError and PHPUnit will catch it for us.
+            include($filename);
 
-        /** @var ListenerSetInterface $set */
-        $compiledClassName = "$namespace\\$class";
-        $set = new $compiledClassName($container);
+            /** @var ListenerSetInterface $set */
+            $compiledClassName = "$namespace\\$class";
+            $set = new $compiledClassName($container);
+        }
+        finally {
+            unlink($filename);
+        }
 
         $d = new BasicDispatcher($set);
 
