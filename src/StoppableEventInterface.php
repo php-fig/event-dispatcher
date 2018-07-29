@@ -24,7 +24,7 @@ interface StoppableEventInterface extends EventInterface
      *
      * @return self
      */
-    public function stopPropagation($stop = true) : self;
+    public function stopPropagation(bool $stop = true) : self;
 
     /**
      * Is propagation stopped?
