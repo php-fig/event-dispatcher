@@ -19,12 +19,9 @@ interface StoppableEventInterface extends EventInterface
      * stop calling any remaining listeners and return handling back to the
      * target object.
      *
-     * @param bool $stop
-     *   True (default) to flag the event as stopped. False to cancel the stoppage.
-     *
      * @return self
      */
-    public function stopPropagation(bool $stop = true) : self;
+    public function stopPropagation() : self;
 
     /**
      * Is propagation stopped?
