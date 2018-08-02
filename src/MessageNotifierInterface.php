@@ -4,19 +4,19 @@ declare(strict_types=1);
 namespace Psr\Event\Dispatcher;
 
 /**
- * Defines a notifying dispatcher.
+ * Defines a notifier for message events.
  */
-interface NotifyDispatcherInterface
+interface MessageNotifierInterface
 {
     /**
-     * Notify listeners of an event.
+     * Notify listeners of a message event.
      *
      * This method MAY act asynchronously.  Callers SHOULD NOT
      * assume that any action has been taken when this method
      * returns.
      *
-     * @param EventInterface $event
+     * @param MessageInterface $event
      *   The event to notify listeners of.
      */
-    public function notify(EventInterface $event) : void;
+    public function notify(MessageInterface $event) : void;
 }

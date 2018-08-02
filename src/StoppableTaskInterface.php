@@ -10,7 +10,7 @@ namespace Psr\Event\Dispatcher;
  * is marked as stopped after each listener is called.  If it is then it should
  * return immediately without calling any further Listeners.
  */
-interface StoppableEventInterface extends EventInterface
+interface StoppableTaskInterface extends MessageInterface
 {
     /**
      * Stop event propagation.
