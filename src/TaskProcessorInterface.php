@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace Psr\Event\Dispatcher;
+namespace Psr\EventDispatcher;
 
 /**
  * Defines a processor for tasks events.
