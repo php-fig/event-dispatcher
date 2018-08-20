@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace Psr\Event\Dispatcher;
+namespace Psr\EventDispatcher;
 
 /**
  * Event that can stop propagation to undispatched listeners.

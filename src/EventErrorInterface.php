@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-namespace Psr\Event\Dispatcher;
+namespace Psr\EventDispatcher;
 
 /**
  * An object that contains information about an error triggered by Event handling.

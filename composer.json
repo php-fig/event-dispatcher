@@ -15,7 +15,7 @@
     },
     "autoload": {
         "psr-4": {
-            "Psr\\Event\\Dispatcher\\": "src/"
+            "Psr\\EventDispatcher\\": "src/"
         }
     },
     "extra": {
