@@ -32,5 +32,5 @@ interface StoppableTaskInterface extends TaskInterface
      * If stopPropagation() has previously been called then this method MUST
      * return true. If not, it may return true or false as appropriate.
      */
-    public function isStopped() : bool;
+    public function isPropagationStopped() : bool;
 }
