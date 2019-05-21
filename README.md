@@ -3,7 +3,7 @@ Event Dispatcher
 
 This repository holds all interfaces related to [PSR-14 (Event Dispatcher)][psr-url].
 
-Note that this is not an Event Dispatcher of its own. It is merely interfaces that describe the components of an Event Dispatcher.
+Note that this is not an Event Dispatcher implementation of its own. It is merely interfaces that describe the components of an Event Dispatcher.
 
 You can find [implementations][implementation-url] and [installation instructions][package-url] for the specification on the packagist.
 
