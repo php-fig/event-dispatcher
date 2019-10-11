@@ -14,7 +14,7 @@ interface EventDispatcherInterface
      * @param EventInterface $event
      *   The object to process.
      *
-     * @return object
+     * @return EventInterface
      *   The Event that was passed, now modified by listeners.
      */
     public function dispatch(EventInterface $event);
