@@ -18,6 +18,9 @@
             "Psr\\EventDispatcher\\": "src/"
         }
     },
+    "suggest": {
+        "fig/event-dispatcher-util": "Provides some useful PSR-14 utilities"
+    },
     "extra": {
         "branch-alias": {
             "dev-master": "1.0.x-dev"
